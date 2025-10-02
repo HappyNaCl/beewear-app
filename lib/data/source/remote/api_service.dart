@@ -6,14 +6,19 @@ class ApiService {
   final Dio dio;
   ApiService(this.dio);
 
-  Future<dynamic> getProfile() async {
-    final res = await dio.get("/user/profile");
-    return res.data;
-  }
-
   Future<dynamic> getRegion() async {
     final res = await dio.get("/region");
     return res.data;
+  }
+
+  Future<dynamic> register(Map<String, dynamic> data) async {
+    final res = await dio.post("/auth/register", data: data);
+    return res.data;
+  }
+
+  Future<dynamic> createOtp(Map<String, dynamic> data) async {
+    final res = await dio.post("/auth/otp/create", data: data);
+    return res.statusCode == 201;
   }
 }
 

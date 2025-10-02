@@ -1,12 +1,13 @@
 import 'package:beewear_app/data/source/local/token_storage.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final storage = TokenStorage();
 
   final dio = Dio(BaseOptions(
-    baseUrl: "https://api.example.com/",
+    baseUrl: dotenv.env["API_URL"] ?? "",
     connectTimeout: const Duration(seconds: 5),
   ));
 
