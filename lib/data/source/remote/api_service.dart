@@ -20,6 +20,11 @@ class ApiService {
     final res = await dio.post("/auth/otp/create", data: data);
     return res.statusCode == 201;
   }
+
+  Future<dynamic> login(Map<String, dynamic> data) async {
+    final res = await dio.post("/auth/login", data: data);
+    return res.data;
+  }
 }
 
 final apiServiceProvider = Provider<ApiService>((ref) {

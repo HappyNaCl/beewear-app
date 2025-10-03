@@ -21,7 +21,7 @@ class RegisterRequest {
       'username': username,
       'password': password,
       'confirmPassword': confirmPassword,
-      'otpSessionId': otp,
+      'otp': otp,
       'regionId': regionId,
     };
   }

@@ -1,6 +1,7 @@
 import 'package:beewear_app/data/repositories/auth/auth_repository.dart';
 import 'package:beewear_app/data/source/remote/api_service.dart';
 import 'package:beewear_app/data/source/remote/dto/request/create_otp_request.dart';
+import 'package:beewear_app/data/source/remote/dto/request/login_request.dart';
 import 'package:beewear_app/data/source/remote/dto/request/register_request.dart';
 import 'package:beewear_app/data/source/remote/dto/response/auth_response.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,9 +17,11 @@ class RemoteAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> login(Map<String, dynamic> data) {
-    // TODO: implement login
-    throw UnimplementedError();
+  Future<AuthResponse> login(LoginRequest request) async {
+    final response = await apiService.login(request.toJson());
+    final data = response["data"];
+    final authResponse = AuthResponse.fromJson(data);
+    return authResponse;
   }
 
   @override
