@@ -3,6 +3,7 @@ class RegisterRequest {
   final String username;
   final String password;
   final String confirmPassword;
+  final String gender;
   final String otp;
   final String regionId;
 
@@ -12,6 +13,7 @@ class RegisterRequest {
     required this.password,
     required this.confirmPassword,
     required this.otp,
+    required this.gender,
     required this.regionId,
   });
 
@@ -22,6 +24,7 @@ class RegisterRequest {
       'password': password,
       'confirmPassword': confirmPassword,
       'otp': otp,
+      'gender': gender,
       'regionId': regionId,
     };
   }

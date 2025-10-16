@@ -125,6 +125,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           const SizedBox(height: 16),
 
+          FormField<String>(
+            validator: (value) {
+              if (state.gender == null) {
+                return "Please select a gender";
+              }
+              return null;
+            },
+            builder: (field) => InputDecorator(
+              decoration: InputDecoration(
+                labelText: "Gender",
+                border: const OutlineInputBorder(),
+                errorText: field.errorText,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton2<String>(
+                  value: state.gender,
+                  isExpanded: true,
+                  hint: const Text("Select gender"),
+                  items: const [
+                    DropdownMenuItem(value: "MALE", child: Text("Male")),
+                    DropdownMenuItem(value: "FEMALE", child: Text("Female")),
+                  ],
+                  onChanged: (value) {
+                    viewModel.setGender(value!);
+                    field.didChange(value);
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
           FormField<Region>(
             validator: (value) {
               if (state.selectedRegion == null) {

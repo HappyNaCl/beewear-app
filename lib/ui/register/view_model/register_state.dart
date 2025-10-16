@@ -10,6 +10,7 @@ class RegisterState {
   final String? email;
   final String? password;
   final String? confirmPassword;
+  final String? gender;
   final String? otp;
 
   const RegisterState({
@@ -21,6 +22,7 @@ class RegisterState {
     this.email,
     this.password,
     this.confirmPassword,
+    this.gender,
     this.otp,
   });
 
@@ -33,6 +35,7 @@ class RegisterState {
     String? email,
     String? password,
     String? confirmPassword,
+    String? gender,
     String? otp,
   }) {
     return RegisterState(
@@ -44,6 +47,7 @@ class RegisterState {
       email: email ?? this.email,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
+      gender: gender ?? this.gender,
       otp: otp ?? this.otp
     );
   }
