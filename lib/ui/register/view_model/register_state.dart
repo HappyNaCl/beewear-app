@@ -1,11 +1,8 @@
-import 'package:beewear_app/domain/models/region.dart';
-
 class RegisterState {
-  final List<Region> regions;
   final bool isLoading;
   final String? error;
+  final bool isRegistered;
 
-  final Region? selectedRegion;
   final String? username;
   final String? email;
   final String? password;
@@ -14,10 +11,9 @@ class RegisterState {
   final String? otp;
 
   const RegisterState({
-    this.regions = const [],
-    this.selectedRegion,
     this.isLoading = false,
     this.error,
+    this.isRegistered = false,
     this.username,
     this.email,
     this.password,
@@ -27,10 +23,9 @@ class RegisterState {
   });
 
   RegisterState copyWith({
-    List<Region>? regions,
-    Region? selectedRegion,
     bool? isLoading,
     String? error,
+    bool? isRegistered,
     String? username,
     String? email,
     String? password,
@@ -39,16 +34,15 @@ class RegisterState {
     String? otp,
   }) {
     return RegisterState(
-      regions: regions ?? this.regions,
-      selectedRegion: selectedRegion ?? this.selectedRegion,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      isRegistered: isRegistered ?? this.isRegistered,
       username: username ?? this.username,
       email: email ?? this.email,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       gender: gender ?? this.gender,
-      otp: otp ?? this.otp
+      otp: otp ?? this.otp,
     );
   }
 }

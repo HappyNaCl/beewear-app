@@ -11,6 +11,11 @@ class ApiService {
     return res.data;
   }
 
+  Future<dynamic> refresh(Map<String, dynamic> data) async {
+    final res = await dio.post("/auth/refresh", data: data);
+    return res.data;
+  }
+
   Future<dynamic> register(Map<String, dynamic> data) async {
     final res = await dio.post("/auth/register", data: data);
     return res.data;
@@ -31,4 +36,3 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   final dio = ref.watch(dioProvider);
   return ApiService(dio);
 });
-

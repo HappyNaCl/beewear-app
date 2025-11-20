@@ -1,36 +1,19 @@
 import 'package:beewear_app/data/repositories/auth/auth_repository.dart';
 import 'package:beewear_app/data/repositories/auth/remote_auth_repository.dart';
-import 'package:beewear_app/data/repositories/region/region_repository.dart';
-import 'package:beewear_app/data/repositories/region/remote_region_repository.dart';
 import 'package:beewear_app/data/source/local/token_storage.dart';
 import 'package:beewear_app/data/source/remote/dto/request/create_otp_request.dart';
 import 'package:beewear_app/data/source/remote/dto/request/register_request.dart';
 import 'package:beewear_app/data/source/remote/dto/response/auth_response.dart';
-import 'package:beewear_app/domain/models/region.dart';
 import 'package:beewear_app/ui/register/view_model/register_state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RegisterViewModel extends StateNotifier<RegisterState> {
   final TokenStorage _tokenStorage;
-  final RegionRepository _regionRepository;
   final AuthRepository _authRepository;
 
-  RegisterViewModel(
-    this._regionRepository,
-    this._authRepository,
-    this._tokenStorage,
-  ) : super(RegisterState());
-
-  Future<void> loadRegions() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final regions = await _regionRepository.fetchRegions();
-      state = state.copyWith(regions: regions, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
-  }
+  RegisterViewModel(this._authRepository, this._tokenStorage)
+    : super(RegisterState());
 
   Future<bool> createOtp() async {
     if (state.email == null || state.email!.isEmpty) {
@@ -56,31 +39,31 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
       state = state.copyWith(error: "Username is required");
       return false;
     }
+
     if (state.email == null || state.email!.isEmpty) {
       state = state.copyWith(error: "Email is required");
       return false;
     }
+
     if (state.password == null || state.password!.isEmpty) {
       state = state.copyWith(error: "Password is required");
       return false;
     }
+
     if (state.confirmPassword == null || state.confirmPassword!.isEmpty) {
       state = state.copyWith(error: "Confirm Password is required");
       return false;
     }
+
     if (state.password != state.confirmPassword) {
       state = state.copyWith(
         error: "Password and Confirm Password do not match",
       );
       return false;
     }
+
     if (state.gender == null || state.gender!.isEmpty) {
       state = state.copyWith(error: "Gender is required");
-      return false;
-    }
-
-    if (state.selectedRegion == null) {
-      state = state.copyWith(error: "Region is required");
       return false;
     }
 
@@ -93,14 +76,13 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
         confirmPassword: state.confirmPassword!,
         gender: state.gender!,
         otp: state.otp!,
-        regionId: state.selectedRegion!.id,
       );
 
       AuthResponse res = await _authRepository.register(data);
 
       await _tokenStorage.saveTokens(res.accessToken, res.refreshToken);
 
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, isRegistered: true);
 
       return true;
     } on DioException catch (e) {
@@ -120,10 +102,6 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
       state = state.copyWith(error: e.toString(), isLoading: false);
       return false;
     }
-  }
-
-  void selectRegion(Region? region) {
-    state = state.copyWith(selectedRegion: region);
   }
 
   void setUsername(String? username) {
@@ -153,9 +131,8 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
 
 final registerViewModelProvider =
     StateNotifierProvider<RegisterViewModel, RegisterState>((ref) {
-      final regionRepository = ref.watch(regionRepositoryProvider);
       final authRepository = ref.watch(authRepositoryProvider);
       final tokenStorage = ref.watch(tokenStorageProvider);
 
-      return RegisterViewModel(regionRepository, authRepository, tokenStorage);
+      return RegisterViewModel(authRepository, tokenStorage);
     });

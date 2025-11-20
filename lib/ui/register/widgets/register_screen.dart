@@ -1,4 +1,5 @@
-import 'package:beewear_app/domain/models/region.dart';
+import 'package:beewear_app/providers/app_startup_provider.dart';
+import 'package:beewear_app/routing/routes.dart';
 import 'package:beewear_app/ui/core/ui/top_bar.dart';
 import 'package:beewear_app/ui/register/view_model/register_state.dart';
 import 'package:beewear_app/ui/register/view_model/register_view_model.dart';
@@ -6,6 +7,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -22,9 +24,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(registerViewModelProvider.notifier).loadRegions(),
-    );
   }
 
   Widget _getStep1(RegisterViewModel viewModel, RegisterState state) {
@@ -95,9 +94,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               if (value.length > 32) {
                 return 'Password must be at most 32 characters long';
               }
-              if (!RegExp(
-                r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
-              ).hasMatch(value)) {
+              if (!RegExp(r'^(?=.*[A-Z])(?=.*\d).+$').hasMatch(value)) {
                 return 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character';
               }
               return null;
@@ -137,7 +134,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 labelText: "Gender",
                 border: const OutlineInputBorder(),
                 errorText: field.errorText,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 0,
+                  vertical: 4,
+                ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton2<String>(
@@ -156,52 +156,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          
-          FormField<Region>(
-            validator: (value) {
-              if (state.selectedRegion == null) {
-                return "Please select a region";
-              }
-              return null;
-            },
-            builder: (field) => InputDecorator(
-              decoration: InputDecoration(
-                labelText: "Region",
-                border: const OutlineInputBorder(),
-                errorText: field.errorText,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton2<Region>(
-                  value: state.selectedRegion,
-                  isExpanded: true,
-                  hint: const Text("Select a region"),
-                  items: state.regions.map((region) {
-                    return DropdownMenuItem(
-                      value: region,
-                      child: Text(region.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    viewModel.selectRegion(value!);
-                    field.didChange(value);
-                  },
-                ),
-              ),
-            ),
-          ),
 
           const SizedBox(height: 20),
 
           ElevatedButton(
             onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  setState(() => activeStep = 1);
-                  viewModel.createOtp();
-                }
+              if (_formKey.currentState!.validate()) {
+                setState(() => activeStep = 1);
+                viewModel.createOtp();
+              }
             },
-            child: const Text('Continue')
+            child: const Text('Continue'),
           ),
         ],
       ),
@@ -227,12 +192,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             viewModel.register();
           },
         ),
-        ElevatedButton(
-          onPressed: () {
-            // TODO: handle email verification confirmation
-          },
-          child: const Text('I have verified'),
-        ),
+        if (state.error != null && !state.isLoading) ...[
+          const SizedBox(height: 8),
+          Text(
+            state.error!,
+            style: const TextStyle(color: Colors.red, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ],
     );
   }
@@ -243,10 +210,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final state = ref.watch(registerViewModelProvider);
 
     ref.listen<RegisterState>(registerViewModelProvider, (prev, next) {
-      if (next.error != null && next.error != prev?.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!)),
-        );
+      if (next.error != null && next.error != prev?.error && activeStep == 0) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error!)));
+      }
+
+      if (next.isRegistered &&
+          next.isRegistered != (prev?.isRegistered ?? false)) {
+        ref.invalidate(appStartupProvider);
+        context.go(Routes.authorized);
       }
     });
 
@@ -260,7 +233,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               EasyStepper(
                 activeStep: activeStep,
                 lineStyle: const LineStyle(lineLength: 100),
-                onStepReached: (index) => setState(() => activeStep = index),
+                onStepReached: (index) {
+                  if (index > activeStep) {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      setState(() => activeStep = index);
+                      viewModel.createOtp();
+                    } else {
+                      _formKey.currentState?.validate();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Please complete the form before proceeding',
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    setState(() => activeStep = index);
+                  }
+                },
                 stepShape: StepShape.circle,
                 stepRadius: 24,
                 finishedStepBorderColor: Colors.deepOrange,
@@ -274,8 +265,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               if (state.isLoading)
                 const Center(child: CircularProgressIndicator())
-              else if (state.error != null)
-                Center(child: Text('Error: ${state.error}'))
               else
                 IndexedStack(
                   index: activeStep,

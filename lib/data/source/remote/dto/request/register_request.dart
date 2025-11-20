@@ -5,7 +5,6 @@ class RegisterRequest {
   final String confirmPassword;
   final String gender;
   final String otp;
-  final String regionId;
 
   RegisterRequest({
     required this.email,
@@ -14,7 +13,6 @@ class RegisterRequest {
     required this.confirmPassword,
     required this.otp,
     required this.gender,
-    required this.regionId,
   });
 
   Map<String, dynamic> toJson() {
@@ -25,7 +23,6 @@ class RegisterRequest {
       'confirmPassword': confirmPassword,
       'otp': otp,
       'gender': gender,
-      'regionId': regionId,
     };
   }
 }
