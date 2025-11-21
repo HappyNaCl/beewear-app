@@ -5,6 +5,7 @@ import 'package:beewear_app/ui/register/view_model/register_state.dart';
 import 'package:beewear_app/ui/register/view_model/register_view_model.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:easy_stepper/easy_stepper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -211,6 +212,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref.listen<RegisterState>(registerViewModelProvider, (prev, next) {
       if (next.error != null && next.error != prev?.error && activeStep == 0) {
+        debugPrint('❌ [REGISTER] Error: ${next.error}');
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(next.error!)));
@@ -218,8 +220,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
       if (next.isRegistered &&
           next.isRegistered != (prev?.isRegistered ?? false)) {
+        debugPrint('✅ [REGISTER] Registration successful!');
+        debugPrint('🔄 [REGISTER] Invalidating appStartupProvider...');
         ref.invalidate(appStartupProvider);
-        context.go(Routes.authorized);
+        debugPrint('🏠 [REGISTER] Scheduling navigation to /home...');
+        // Use Future.microtask to ensure navigation happens after the widget tree updates
+        Future.microtask(() {
+          if (context.mounted) {
+            debugPrint('🏠 [REGISTER] Navigating to /home');
+            context.go(Routes.home);
+          } else {
+            debugPrint(
+              '⚠️ [REGISTER] Context not mounted, skipping navigation',
+            );
+          }
+        });
       }
     });
 

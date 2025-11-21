@@ -6,6 +6,7 @@ import 'package:beewear_app/data/source/remote/dto/request/refresh_request.dart'
 import 'package:beewear_app/data/source/remote/dto/request/register_request.dart';
 import 'package:beewear_app/data/source/remote/dto/response/auth_response.dart';
 import 'package:beewear_app/data/source/remote/dto/response/refresh_response.dart';
+import 'package:beewear_app/domain/models/user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RemoteAuthRepository implements AuthRepository {
@@ -40,6 +41,14 @@ class RemoteAuthRepository implements AuthRepository {
     final data = response["data"];
     final refreshResponse = RefreshResponse.fromJson(data);
     return refreshResponse;
+  }
+
+  @override
+  Future<User> getMe() async {
+    final response = await apiService.getMe();
+    final data = response["data"];
+    final user = User.fromMeResponse(data);
+    return user;
   }
 }
 

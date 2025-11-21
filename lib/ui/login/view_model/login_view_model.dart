@@ -3,6 +3,8 @@ import 'package:beewear_app/data/repositories/auth/remote_auth_repository.dart';
 import 'package:beewear_app/data/source/local/token_storage.dart';
 import 'package:beewear_app/data/source/remote/dto/request/login_request.dart';
 import 'package:beewear_app/data/source/remote/dto/response/auth_response.dart';
+import 'package:beewear_app/domain/models/user.dart';
+import 'package:beewear_app/providers/user_provider.dart';
 import 'package:beewear_app/ui/login/view_model/login_state.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +13,9 @@ import 'package:dio/dio.dart';
 class LoginViewModel extends StateNotifier<LoginState> {
   final AuthRepository _authRepository;
   final TokenStorage _tokenStorage;
+  final Ref _ref;
 
-  LoginViewModel(this._authRepository, this._tokenStorage)
+  LoginViewModel(this._authRepository, this._tokenStorage, this._ref)
     : super(const LoginState());
 
   void setEmail(String? email) {
@@ -46,7 +49,16 @@ class LoginViewModel extends StateNotifier<LoginState> {
         response.refreshToken,
       );
 
-      state = state.copyWith(isLoading: false);
+      // Save user data to global provider
+      final user = User(
+        userId: response.userId,
+        email: response.email,
+        username: response.username,
+        profilePicture: response.profilePicture,
+      );
+      _ref.read(currentUserProvider.notifier).setUser(user);
+
+      state = state.copyWith(isLoading: false, isLoggedIn: true);
       return true;
     } on DioException catch (e) {
       String errorMessage = "Network error occured";
@@ -75,5 +87,5 @@ final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, LoginState>((ref) {
       final authRepository = ref.watch(authRepositoryProvider);
       final tokenStorage = ref.watch(tokenStorageProvider);
-      return LoginViewModel(authRepository, tokenStorage);
+      return LoginViewModel(authRepository, tokenStorage, ref);
     });

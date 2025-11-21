@@ -4,6 +4,8 @@ import 'package:beewear_app/data/source/local/token_storage.dart';
 import 'package:beewear_app/data/source/remote/dto/request/create_otp_request.dart';
 import 'package:beewear_app/data/source/remote/dto/request/register_request.dart';
 import 'package:beewear_app/data/source/remote/dto/response/auth_response.dart';
+import 'package:beewear_app/domain/models/user.dart';
+import 'package:beewear_app/providers/user_provider.dart';
 import 'package:beewear_app/ui/register/view_model/register_state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +13,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class RegisterViewModel extends StateNotifier<RegisterState> {
   final TokenStorage _tokenStorage;
   final AuthRepository _authRepository;
+  final Ref _ref;
 
-  RegisterViewModel(this._authRepository, this._tokenStorage)
+  RegisterViewModel(this._authRepository, this._tokenStorage, this._ref)
     : super(RegisterState());
 
   Future<bool> createOtp() async {
@@ -82,6 +85,15 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
 
       await _tokenStorage.saveTokens(res.accessToken, res.refreshToken);
 
+      // Save user data to global provider
+      final user = User(
+        userId: res.userId,
+        email: res.email,
+        username: res.username,
+        profilePicture: res.profilePicture,
+      );
+      _ref.read(currentUserProvider.notifier).setUser(user);
+
       state = state.copyWith(isLoading: false, isRegistered: true);
 
       return true;
@@ -134,5 +146,5 @@ final registerViewModelProvider =
       final authRepository = ref.watch(authRepositoryProvider);
       final tokenStorage = ref.watch(tokenStorageProvider);
 
-      return RegisterViewModel(authRepository, tokenStorage);
+      return RegisterViewModel(authRepository, tokenStorage, ref);
     });

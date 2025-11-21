@@ -11,6 +11,11 @@ class ApiService {
     return res.data;
   }
 
+  Future<dynamic> getMe() async {
+    final res = await dio.get("/me");
+    return res.data;
+  }
+
   Future<dynamic> refresh(Map<String, dynamic> data) async {
     final res = await dio.post("/auth/refresh", data: data);
     return res.data;
@@ -28,6 +33,11 @@ class ApiService {
 
   Future<dynamic> login(Map<String, dynamic> data) async {
     final res = await dio.post("/auth/login", data: data);
+    return res.data;
+  }
+
+  Future<dynamic> getRecentProducts() async {
+    final res = await dio.get("/product/recent");
     return res.data;
   }
 }
