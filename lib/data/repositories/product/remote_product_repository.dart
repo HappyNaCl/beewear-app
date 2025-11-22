@@ -9,8 +9,10 @@ class RemoteProductRepository implements ProductRepository {
   const RemoteProductRepository(this.apiService);
 
   @override
-  Future<List<Product>> getRecentProducts() async {
-    final response = await apiService.getRecentProducts();
+  Future<List<Product>> getRecentProducts({String? lastTimestamp}) async {
+    final response = await apiService.getRecentProducts(
+      lastTimestamp: lastTimestamp,
+    );
     final data = response["data"] as List;
     return data.map((json) => Product.fromJson(json)).toList();
   }

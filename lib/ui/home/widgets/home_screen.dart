@@ -1,15 +1,43 @@
 import 'package:beewear_app/domain/models/product.dart';
-import 'package:beewear_app/providers/product_provider.dart';
-import 'package:beewear_app/providers/user_provider.dart';
 import 'package:beewear_app/ui/core/themes/colors.dart';
+import 'package:beewear_app/ui/home/view_model/products_notifier.dart';
+import 'package:beewear_app/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // Load more when user is 200px from the bottom
+      ref.read(productsNotifierProvider.notifier).loadMoreProducts();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
 
     if (currentUser == null) {
@@ -27,6 +55,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            controller: _scrollController,
             child: Column(
               children: [
                 // Top bar with search and settings
@@ -278,78 +307,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        ref
-                            .watch(recentProductsProvider)
-                            .when(
-                              data: (products) {
-                                if (products.isEmpty) {
-                                  return SizedBox(
-                                    height: 200,
-                                    child: Center(
-                                      child: Text(
-                                        'No products available',
-                                        style: TextStyle(
-                                          color: AppColors.grey3,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        childAspectRatio: 0.75,
-                                      ),
-                                  itemCount: products.length,
-                                  itemBuilder: (context, index) {
-                                    final product = products[index];
-                                    return _buildProductCard(product);
-                                  },
-                                );
-                              },
-                              loading: () => const SizedBox(
-                                height: 200,
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                              error: (error, stack) => SizedBox(
-                                height: 200,
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.error_outline,
-                                        color: AppColors.grey3,
-                                        size: 48,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'Failed to load products',
-                                        style: TextStyle(
-                                          color: AppColors.grey3,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        error.toString(),
-                                        style: TextStyle(
-                                          color: AppColors.grey3,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                        _buildProductsGrid(),
                       ],
                     ),
                   ),
@@ -360,6 +318,79 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProductsGrid() {
+    final productsState = ref.watch(productsNotifierProvider);
+
+    if (productsState.products.isEmpty && productsState.isLoading) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (productsState.products.isEmpty && productsState.error != null) {
+      return SizedBox(
+        height: 200,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, color: AppColors.grey3, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load products',
+                style: TextStyle(color: AppColors.grey3),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                productsState.error!,
+                style: TextStyle(color: AppColors.grey3, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (productsState.products.isEmpty) {
+      return SizedBox(
+        height: 200,
+        child: Center(
+          child: Text(
+            'No more products',
+            style: TextStyle(color: AppColors.grey3),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: productsState.products.length,
+          itemBuilder: (context, index) {
+            final product = productsState.products[index];
+            return _buildProductCard(product);
+          },
+        ),
+        if (productsState.isLoading && productsState.products.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: CircularProgressIndicator(),
+          ),
+      ],
     );
   }
 
@@ -393,6 +424,20 @@ class HomeScreen extends ConsumerWidget {
                         product.imageUrl!,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: AppColors.primary,
+                            ),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) {
                           return Center(
                             child: Icon(
@@ -446,23 +491,11 @@ class HomeScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        'Rp. ${product.price.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.add,
-                          size: 16,
-                          color: AppColors.white,
                         ),
                       ),
                     ],

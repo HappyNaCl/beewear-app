@@ -36,8 +36,13 @@ class ApiService {
     return res.data;
   }
 
-  Future<dynamic> getRecentProducts() async {
-    final res = await dio.get("/product/recent");
+  Future<dynamic> getRecentProducts({String? lastTimestamp}) async {
+    final res = await dio.get(
+      "/product/recent",
+      queryParameters: lastTimestamp != null
+          ? {"lastTimestamp": lastTimestamp}
+          : null,
+    );
     return res.data;
   }
 }
