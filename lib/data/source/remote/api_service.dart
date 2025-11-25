@@ -45,6 +45,19 @@ class ApiService {
     );
     return res.data;
   }
+
+  Future<dynamic> getCategorizedProducts(String category, int page) async {
+    final res = await dio.get(
+      "/product/search",
+      queryParameters: {
+        "category": category,
+        "page": page,
+        "size": 10,
+        "sort": "createdAt",
+      },
+    );
+    return res.data;
+  }
 }
 
 final apiServiceProvider = Provider<ApiService>((ref) {

@@ -4,6 +4,10 @@ import 'package:beewear_app/ui/home/view_model/products_notifier.dart';
 import 'package:beewear_app/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:beewear_app/ui/core/ui/search_bar.dart' as core_ui;
+import 'package:beewear_app/ui/core/ui/product/product_card.dart';
+import 'package:beewear_app/ui/core/layout/main_layout.dart';
+import 'package:beewear_app/ui/category/category_page.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -44,8 +48,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      body: Container(
+    return MainLayout(
+      currentIndex: 0,
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -58,65 +63,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             controller: _scrollController,
             child: Column(
               children: [
-                // Top bar with search and settings
-                Container(
-                  margin: const EdgeInsets.all(16.0),
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.blackTransparent,
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Search bar
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.grey1,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search...',
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: AppColors.grey3,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
-                              ),
-                            ),
-                            onTap: () {
-                              // TODO: Navigate to search screen
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Settings icon
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.grey1,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.settings, color: AppColors.grey3),
-                          onPressed: () {
-                            // TODO: Navigate to settings screen
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                // Top bar with search
+                core_ui.SearchBar(
+                  hintText: 'Search...',
+                  onSubmitted: (q) {
+                    // TODO: Navigate to search or trigger search
+                  },
                 ),
 
                 // Profile Card
@@ -243,7 +195,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               title: 'TOP',
                               color: AppColors.primary,
                               onTap: () {
-                                // TODO: Navigate to TOP category
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CategoryPage(category: 'TOP'),
+                                  ),
+                                );
                               },
                             ),
                             _buildCategoryButton(
@@ -251,7 +209,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               title: 'BOTTOM',
                               color: AppColors.secondary,
                               onTap: () {
-                                // TODO: Navigate to BOTTOM category
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CategoryPage(category: 'BOTTOM'),
+                                  ),
+                                );
                               },
                             ),
                             _buildCategoryButton(
@@ -259,7 +223,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               title: 'SHOES',
                               color: AppColors.accent,
                               onTap: () {
-                                // TODO: Navigate to SHOES category
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CategoryPage(category: 'SHOES'),
+                                  ),
+                                );
                               },
                             ),
                             _buildCategoryButton(
@@ -267,7 +237,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               title: 'ACCESSORY',
                               color: AppColors.primary,
                               onTap: () {
-                                // TODO: Navigate to ACCESSORY category
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const CategoryPage(
+                                      category: 'ACCESSORY',
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                           ],
@@ -368,145 +345,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    return Column(
-      children: [
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: productsState.products.length,
-          itemBuilder: (context, index) {
-            final product = productsState.products[index];
-            return _buildProductCard(product);
-          },
-        ),
-        if (productsState.isLoading && productsState.products.isNotEmpty)
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: CircularProgressIndicator(),
-          ),
-      ],
+    // Use LayoutBuilder to get actual available width dynamically
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const double crossAxisSpacing = 12.0;
+        final availableWidth = constraints.maxWidth;
+        final tileWidth = (availableWidth - crossAxisSpacing) / 2;
+
+        // ProductCard layout: AspectRatio(1) image + 88px info + 16px padding (8+8)
+        const double infoAreaInnerHeight = 88.0;
+        const double infoAreaVerticalPadding = 16.0;
+        final tileHeight =
+            tileWidth + infoAreaInnerHeight + infoAreaVerticalPadding;
+        final childAspectRatio = tileWidth / tileHeight;
+
+        return Column(
+          children: [
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: crossAxisSpacing,
+                mainAxisSpacing: 12,
+                childAspectRatio: childAspectRatio,
+              ),
+              itemCount: productsState.products.length,
+              itemBuilder: (context, index) {
+                final product = productsState.products[index];
+                return _buildProductCard(product);
+              },
+            ),
+            if (productsState.isLoading && productsState.products.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildProductCard(Product product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grey1,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product Image
-          Expanded(
-            flex: 3,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
-              child: product.imageUrl != null
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                      child: Image.network(
-                        product.imageUrl!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                              color: AppColors.primary,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.shopping_bag,
-                              size: 48,
-                              color: AppColors.grey3,
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.shopping_bag,
-                        size: 48,
-                        color: AppColors.grey3,
-                      ),
-                    ),
-            ),
-          ),
-          // Product Info
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product.category,
-                        style: TextStyle(fontSize: 11, color: AppColors.grey3),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Rp. ${product.price.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return ProductCard(product: product);
   }
 
   Widget _buildCategoryButton({
