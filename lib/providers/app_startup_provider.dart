@@ -17,7 +17,6 @@ final appStartupProvider = FutureProvider<AuthState>((ref) async {
   final userNotifier = ref.read(currentUserProvider.notifier);
 
   try {
-    // Check if access token exists in secure storage
     final accessToken = await tokenStorage.getAccessToken();
     debugPrint(
       '🔑 [APP_STARTUP] Access token exists: ${accessToken != null && accessToken.isNotEmpty}',
