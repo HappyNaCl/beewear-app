@@ -5,6 +5,9 @@ import 'package:beewear_app/ui/home/widgets/home_screen.dart';
 import 'package:beewear_app/ui/landing/widgets/landing_screen.dart';
 import 'package:beewear_app/ui/login/widgets/login_screen.dart';
 import 'package:beewear_app/ui/register/widgets/register_screen.dart';
+import 'package:beewear_app/ui/search/widgets/search_screen.dart';
+import 'package:beewear_app/ui/cart/widgets/cart_screen.dart';
+import 'package:beewear_app/ui/add_product/widgets/add_product_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,13 +27,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           debugPrint('✅ [ROUTER] AppStartup state: $authState');
 
           final isGoingToHome = state.matchedLocation == Routes.home;
-          final isGoingToAuthorized =
-              state.matchedLocation == Routes.authorized;
-          final isAuthenticated = authState == AuthState.authenticated;
+          // final isGoingToProfile = state.matchedLocation == Routes.profile;
+          final isGoingToAddProduct =
+              state.matchedLocation == Routes.addProduct;
+          final isGoingToCart = state.matchedLocation == Routes.cart;
+
+          final isGoingToProtectedRoute =
+              isGoingToHome || isGoingToAddProduct || isGoingToCart;
+
           final isPublicRoute =
               state.matchedLocation == Routes.landing ||
               state.matchedLocation == Routes.login ||
               state.matchedLocation == Routes.register;
+
+          final isAuthenticated = authState == AuthState.authenticated;
 
           debugPrint('🔄 [ROUTER] isAuthenticated: $isAuthenticated');
           debugPrint('🔄 [ROUTER] isGoingToHome: $isGoingToHome');
@@ -43,45 +53,32 @@ final routerProvider = Provider<GoRouter>((ref) {
             return Routes.home;
           }
 
-          // If user is authenticated and not going to a protected route, redirect to home
-          if (isAuthenticated && !isGoingToHome && !isGoingToAuthorized) {
+          if (isAuthenticated && isPublicRoute) {
+            return Routes.home;
+          }
+
+          // 2. If logged in and trying to go somewhere valid, let them pass
+          if (isAuthenticated && isGoingToProtectedRoute) {
+            return null; // Allow navigation
+          }
+
+          // 3. If logged in but route is unknown (e.g. 404), go to Home
+          if (isAuthenticated && !isGoingToProtectedRoute) {
             debugPrint(
-              '🏠 [ROUTER] Authenticated user on unknown route -> Redirecting to /home',
+              '🏠 [ROUTER] Authenticated but unknown route -> Redirecting to /home',
             );
             return Routes.home;
           }
 
-          // If user is not authenticated and trying to access protected routes, redirect to landing
-          if (!isAuthenticated && (isGoingToHome || isGoingToAuthorized)) {
-            debugPrint(
-              '🚫 [ROUTER] Unauthenticated user on protected route -> Redirecting to /landing',
-            );
+          // 4. If NOT logged in and trying to access private pages, kick to Landing
+          if (!isAuthenticated && isGoingToProtectedRoute) {
             return Routes.landing;
           }
 
-          // No redirect needed
-          debugPrint('✅ [ROUTER] No redirect needed');
           return null;
         },
-        loading: () {
-          debugPrint('⏳ [ROUTER] AppStartup loading...');
-          // While loading, don't redirect (show current route or initial)
-          return null;
-        },
-        error: (error, stackTrace) {
-          debugPrint('❌ [ROUTER] AppStartup error: $error');
-          // On error, treat as unauthenticated and go to landing
-          final isGoingToProtected =
-              state.matchedLocation == Routes.home ||
-              state.matchedLocation == Routes.authorized;
-          if (isGoingToProtected) {
-            debugPrint(
-              '🚫 [ROUTER] Error state + protected route -> Redirecting to /landing',
-            );
-            return Routes.landing;
-          }
-          return null;
-        },
+        loading: () => null,
+        error: (_, __) => Routes.landing,
       );
     },
     routes: [
@@ -108,6 +105,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           return HomeScreen();
         },
+      ),
+      GoRoute(
+        path: Routes.addProduct,
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: AddProductScreen()),
+      ),
+      GoRoute(
+        path: Routes.cart,
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: CartScreen()),
       ),
       GoRoute(
         path: Routes.authorized,

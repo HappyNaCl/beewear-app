@@ -8,6 +8,8 @@ import 'package:beewear_app/ui/core/ui/search_bar.dart' as core_ui;
 import 'package:beewear_app/ui/core/ui/product/product_card.dart';
 import 'package:beewear_app/ui/core/layout/main_layout.dart';
 import 'package:beewear_app/ui/category/category_page.dart';
+import 'package:beewear_app/routing/routes.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -67,7 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 core_ui.SearchBar(
                   hintText: 'Search...',
                   onSubmitted: (q) {
-                    // TODO: Navigate to search or trigger search
+                    context.go(Routes.search);
                   },
                 ),
 

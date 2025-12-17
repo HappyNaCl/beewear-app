@@ -14,7 +14,8 @@ class LandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopBar(),
-      body: Padding(
+      body: Center(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(Dimens.paddingHorizontal),
           child: Column(
             spacing: 28,
@@ -74,6 +75,7 @@ class LandingScreen extends StatelessWidget {
               SizedBox(height: 20)
             ],
           )
+        )
       )
     );
   }

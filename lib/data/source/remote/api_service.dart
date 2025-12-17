@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:beewear_app/data/source/remote/dio.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,6 +57,40 @@ class ApiService {
         "size": 10,
         "sort": "createdAt",
       },
+    );
+    return res.data;
+  }
+
+  Future<dynamic> searchProducts(String query, int page) async {
+    final res = await dio.get(
+      "/product/search",
+      queryParameters: {
+        "query": query, // Send the text query to backend
+        "page": page,
+        "size": 10,
+        "sort": "createdAt",
+      },
+    );
+    return res.data;
+  }
+
+  Future<dynamic> createProduct(
+    Map<String, dynamic> data,
+    List<File> images,
+  ) async {
+    final formData = FormData.fromMap(data);
+
+    for (var file in images) {
+      String fileName = file.path.split('/').last;
+      formData.files.add(MapEntry(
+        "images",
+        await MultipartFile.fromFile(file.path, filename: fileName),
+      ));
+    }
+
+    final res = await dio.post(
+      "/product", 
+      data: formData,
     );
     return res.data;
   }

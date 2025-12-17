@@ -225,16 +225,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ref.invalidate(appStartupProvider);
         debugPrint('🏠 [REGISTER] Scheduling navigation to /home...');
         // Use Future.microtask to ensure navigation happens after the widget tree updates
-        Future.microtask(() {
-          if (context.mounted) {
-            debugPrint('🏠 [REGISTER] Navigating to /home');
-            context.go(Routes.home);
-          } else {
-            debugPrint(
-              '⚠️ [REGISTER] Context not mounted, skipping navigation',
-            );
-          }
-        });
+        // Future.microtask(() {
+        //   if (context.mounted) {
+        //     debugPrint('🏠 [REGISTER] Navigating to /home');
+        //     context.go(Routes.home);
+        //   } else {
+        //     debugPrint(
+        //       '⚠️ [REGISTER] Context not mounted, skipping navigation',
+        //     );
+        //   }
+        // });
       }
     });
 

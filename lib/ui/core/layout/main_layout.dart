@@ -1,6 +1,7 @@
+import 'package:beewear_app/routing/routes.dart'; // Import Routes
 import 'package:beewear_app/ui/core/ui/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart'; // Import GoRouter
 class MainLayout extends StatefulWidget {
   final Widget child;
   final int currentIndex;
@@ -12,35 +13,29 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  late int _currentNavIndex;
+  // late int _currentNavIndex;
 
-  @override
-  void initState() {
-    super.initState();
-    _currentNavIndex = widget.currentIndex;
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _currentNavIndex = widget.currentIndex;
+  // }
 
   void _handleNavTap(int index) {
-    setState(() {
-      _currentNavIndex = index;
-    });
-
-    // Handle navigation based on index
-    if (!mounted) return;
+    if (index == widget.currentIndex) return; // Don't reload current page
 
     switch (index) {
       case 0:
-        // Home - pop to root if not already there
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        context.go(Routes.home);
         break;
       case 1:
-        // Search - TODO: Navigate to search screen
+        context.go(Routes.addProduct);
         break;
       case 2:
-        // Cart - TODO: Navigate to cart screen
+        context.go(Routes.cart);
         break;
       case 3:
-        // Profile - TODO: Navigate to profile screen
+        context.go(Routes.authorized); // Using AuthorizedScreen as Profile
         break;
     }
   }
@@ -50,7 +45,7 @@ class _MainLayoutState extends State<MainLayout> {
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: BottomNavBar(
-        currentIndex: _currentNavIndex,
+        currentIndex: widget.currentIndex,
         onTap: _handleNavTap,
       ),
     );
