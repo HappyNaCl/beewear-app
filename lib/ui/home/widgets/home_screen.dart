@@ -390,7 +390,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildProductCard(Product product) {
-    return ProductCard(product: product);
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(
+          'product_detail',
+          extra: product,
+        );
+      },
+      child: ProductCard(product: product),
+    );
   }
 
   Widget _buildCategoryButton({

@@ -1,9 +1,11 @@
+import 'package:beewear_app/domain/models/product.dart';
 import 'package:beewear_app/providers/app_startup_provider.dart';
 import 'package:beewear_app/routing/routes.dart';
 import 'package:beewear_app/ui/authorized/widgets/authorized_screen.dart';
 import 'package:beewear_app/ui/home/widgets/home_screen.dart';
 import 'package:beewear_app/ui/landing/widgets/landing_screen.dart';
 import 'package:beewear_app/ui/login/widgets/login_screen.dart';
+import 'package:beewear_app/ui/product_detail/widgets/product_detail_screen.dart';
 import 'package:beewear_app/ui/register/widgets/register_screen.dart';
 import 'package:beewear_app/ui/search/widgets/search_screen.dart';
 import 'package:beewear_app/ui/cart/widgets/cart_screen.dart';
@@ -31,9 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final isGoingToAddProduct =
               state.matchedLocation == Routes.addProduct;
           final isGoingToCart = state.matchedLocation == Routes.cart;
+          final isGoingToProductDetail = state.matchedLocation == Routes.productDetail;
 
           final isGoingToProtectedRoute =
-              isGoingToHome || isGoingToAddProduct || isGoingToCart;
+              isGoingToHome || isGoingToAddProduct || isGoingToCart || isGoingToProductDetail;
 
           final isPublicRoute =
               state.matchedLocation == Routes.landing ||
@@ -120,6 +123,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.authorized,
         builder: (context, state) {
           return AuthorizedScreen();
+        },
+      ),
+      GoRoute(
+        path: '/product', 
+        name: 'product_detail',
+        pageBuilder: (context, state) {
+          final product = state.extra as Product;
+          return NoTransitionPage(child: ProductDetailScreen(product: product));
         },
       ),
     ],

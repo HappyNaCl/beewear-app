@@ -52,6 +52,39 @@ class RemoteProductRepository implements ProductRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<Product?> getProductDetail(String id) async {
+    try {
+      final response = await apiService.getProductDetail(id);
+      return Product.fromJson(response['data']);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> deleteProduct(String id) async {
+    try {
+      await apiService.deleteProduct(id);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> addToCart(String productId, int quantity) async {
+    try {
+      await apiService.addToCart({
+        "productId": productId,
+        "quantity": quantity
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {

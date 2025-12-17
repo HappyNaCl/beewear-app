@@ -6,4 +6,7 @@ abstract class ProductRepository {
   Future<List<Product>> getCategorizedProducts(String category, int page);
   Future<List<Product>> searchProducts(String query, int page);
   Future<bool> createProduct(CreateProductRequest request);
+  Future<Product?> getProductDetail(String id);
+  Future<bool> deleteProduct(String id);
+  Future<bool> addToCart(String productId, int quantity);
 }

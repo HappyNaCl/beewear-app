@@ -1,30 +1,46 @@
 class Product {
-  final String productId;
+  final String id;
   final String name;
+  final String description; 
   final double price;
   final String gender;
-  final String? imageUrl;
+  final String imageUrl;
   final String category;
+  final String creatorId; 
+  final String status;    
   final DateTime createdAt;
 
   const Product({
-    required this.productId,
+    required this.id,
     required this.name,
+    required this.description,
     required this.price,
     required this.gender,
-    this.imageUrl,
+    required this.imageUrl,
     required this.category,
+    required this.creatorId,
+    required this.status,
     required this.createdAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    String img = "";
+    if (json['productImages'] != null && (json['productImages'] as List).isNotEmpty) {
+      img = json['productImages'][0]['imageUrl'];
+    } else if (json['imageUrl'] != null) {
+      img = json['imageUrl'];
+    }
+
     return Product(
-      productId: json['id'],
-      name: json['name'] ?? '',
+      id: json['id'] ?? json['productId'] ?? '', 
+      name: json['name'] ?? 'Unknown',
+      description: json['description'] ?? "No description provided",
       price: (json['price'] ?? 0).toDouble(),
-      gender: json['gender'] ?? '',
-      imageUrl: json['imageUrl'],
-      category: json['category'] ?? '',
+      gender: json['forGender'] ?? json['gender'] ?? 'Unisex', 
+      imageUrl: img,
+      category: json['productCategory'] ?? json['category'] ?? 'Uncategorized',
+      creatorId: json['creatorId'] ?? '',
+      status: json['status'] ?? 'ACTIVE',
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
@@ -33,36 +49,16 @@ class Product {
 
   Map<String, dynamic> toJson() {
     return {
-      'productId': productId,
+      'id': id,
       'name': name,
+      'description': description,
       'price': price,
       'gender': gender,
       'imageUrl': imageUrl,
-      'category': category,
+      'productCategory': category,
+      'creatorId': creatorId,
+      'status': status,
       'createdAt': createdAt.toIso8601String(),
     };
-  }
-
-  Product copyWith({
-    String? productId,
-    String? name,
-    String? description,
-    double? price,
-    String? imageUrl,
-    String? category,
-    String? brand,
-    int? stock,
-    DateTime? createdAt,
-    String? gender,
-  }) {
-    return Product(
-      productId: productId ?? this.productId,
-      name: name ?? this.name,
-      price: price ?? this.price,
-      imageUrl: imageUrl ?? this.imageUrl,
-      category: category ?? this.category,
-      createdAt: createdAt ?? this.createdAt,
-      gender: gender ?? this.gender,
-    );
   }
 }

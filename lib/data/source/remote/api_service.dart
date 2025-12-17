@@ -65,7 +65,7 @@ class ApiService {
     final res = await dio.get(
       "/product/search",
       queryParameters: {
-        "query": query, // Send the text query to backend
+        "query": query, 
         "page": page,
         "size": 10,
         "sort": "createdAt",
@@ -92,6 +92,21 @@ class ApiService {
       "/product", 
       data: formData,
     );
+    return res.data;
+  }
+
+  Future<dynamic> getProductDetail(String id) async {
+    final res = await dio.get("/product/$id");
+    return res.data;
+  }
+
+  Future<dynamic> deleteProduct(String id) async {
+    await dio.delete("/product/$id");
+    return true; 
+  }
+
+  Future<dynamic> addToCart(Map<String, dynamic> data) async {
+    final res = await dio.post("/cart", data: data);
     return res.data;
   }
 }
