@@ -35,7 +35,7 @@ class _MainLayoutState extends State<MainLayout> {
         context.go(Routes.cart);
         break;
       case 3:
-        context.go(Routes.authorized); // Using AuthorizedScreen as Profile
+        context.go(Routes.profile); // Using AuthorizedScreen as Profile
         break;
     }
   }

@@ -6,6 +6,7 @@ import 'package:beewear_app/ui/core/layout/main_layout.dart';
 import 'package:beewear_app/ui/category/view_model/category_products_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class CategoryPage extends ConsumerStatefulWidget {
   final String category;
@@ -129,7 +130,15 @@ class _CategoryPageState extends ConsumerState<CategoryPage> {
                   itemCount: productsState.products.length,
                   itemBuilder: (context, index) {
                     final Product product = productsState.products[index];
-                    return ProductCard(product: product);
+                    return GestureDetector(
+                      onTap: () {
+                         context.pushNamed(
+                           'product_detail',
+                           extra: product,
+                         );
+                      },
+                      child: ProductCard(product: product),
+                    );
                   },
                 ),
               ),

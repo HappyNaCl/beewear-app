@@ -2,6 +2,7 @@ import 'package:beewear_app/data/repositories/product/product_repository.dart';
 import 'package:beewear_app/data/source/remote/api_service.dart';
 import 'package:beewear_app/data/source/remote/dto/request/create_product_request.dart';
 import 'package:beewear_app/domain/models/product.dart';
+import 'package:beewear_app/domain/models/cart_item.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RemoteProductRepository implements ProductRepository {
@@ -84,6 +85,42 @@ class RemoteProductRepository implements ProductRepository {
     } catch (e) {
       return false;
     }
+  }
+
+  @override
+  Future<List<CartItem>> getCart() async {
+    final response = await apiService.getCart();
+    final data = response['data'] as List;
+    return data.map((json) => CartItem.fromJson(json)).toList();
+  }
+
+  @override
+  Future<bool> removeFromCart(String cartItemId) async {
+    try {
+      await apiService.removeFromCart(cartItemId);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<Map<String, int>> getMyStats() async {
+    try {
+      final res = await apiService.getMyStats();
+      final data = res['data'];
+      return {
+        'sold': data['soldCount'] ?? 0,
+        'active': data['activeCount'] ?? 0,
+      };
+    } catch (e) {
+      return {'sold': 0, 'active': 0};
+    }
+  }
+
+  Future<List<Product>> getMyProducts() async {
+    final res = await apiService.getMyProducts();
+    final data = res['data'] as List;
+    return data.map((json) => Product.fromJson(json)).toList();
   }
 }
 

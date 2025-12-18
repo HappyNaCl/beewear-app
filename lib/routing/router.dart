@@ -6,6 +6,7 @@ import 'package:beewear_app/ui/home/widgets/home_screen.dart';
 import 'package:beewear_app/ui/landing/widgets/landing_screen.dart';
 import 'package:beewear_app/ui/login/widgets/login_screen.dart';
 import 'package:beewear_app/ui/product_detail/widgets/product_detail_screen.dart';
+import 'package:beewear_app/ui/profile/widgets/profile_screen.dart';
 import 'package:beewear_app/ui/register/widgets/register_screen.dart';
 import 'package:beewear_app/ui/search/widgets/search_screen.dart';
 import 'package:beewear_app/ui/cart/widgets/cart_screen.dart';
@@ -33,10 +34,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           final isGoingToAddProduct =
               state.matchedLocation == Routes.addProduct;
           final isGoingToCart = state.matchedLocation == Routes.cart;
-          final isGoingToProductDetail = state.matchedLocation == Routes.productDetail;
+          final isGoingToProductDetail =
+              state.matchedLocation == Routes.productDetail;
+          final isGoingToSearch = state.matchedLocation == Routes.search;
+          final isGoingToProfile = state.matchedLocation == Routes.profile;
+          final isGoingToAuthorized = state.matchedLocation == Routes.authorized;
 
           final isGoingToProtectedRoute =
-              isGoingToHome || isGoingToAddProduct || isGoingToCart || isGoingToProductDetail;
+              isGoingToHome ||
+              isGoingToAddProduct ||
+              isGoingToCart ||
+              isGoingToProductDetail ||
+              isGoingToSearch ||
+              isGoingToProfile || 
+              isGoingToAuthorized;
 
           final isPublicRoute =
               state.matchedLocation == Routes.landing ||
@@ -120,17 +131,31 @@ final routerProvider = Provider<GoRouter>((ref) {
             const NoTransitionPage(child: CartScreen()),
       ),
       GoRoute(
+        path: Routes.search,
+        name: 'search',
+        builder: (context, state) {
+          final query = state.uri.queryParameters['q'];
+          return SearchScreen(initialQuery: query);
+        },
+      ),
+      GoRoute(
         path: Routes.authorized,
         builder: (context, state) {
           return AuthorizedScreen();
         },
       ),
       GoRoute(
-        path: '/product', 
+        path: Routes.productDetail,
         name: 'product_detail',
         pageBuilder: (context, state) {
           final product = state.extra as Product;
           return NoTransitionPage(child: ProductDetailScreen(product: product));
+        },
+      ),
+      GoRoute(
+        path: Routes.profile, // Assuming this is your Profile route
+        builder: (context, state) {
+          return const ProfileScreen();
         },
       ),
     ],

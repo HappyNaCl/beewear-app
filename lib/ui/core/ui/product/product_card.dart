@@ -21,16 +21,13 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image (square)
-            AspectRatio(
-              aspectRatio: 1,
+            Expanded(
               child: Container(
+                width: double.infinity,
                 color: AppColors.white,
-                child: product.imageUrl != null
+                child: product.imageUrl.isNotEmpty
                     ? Image.network(
-                        product.imageUrl!,
-                        width: double.infinity,
-                        height: double.infinity,
+                        product.imageUrl,
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
@@ -54,52 +51,59 @@ class ProductCard extends StatelessWidget {
                           );
                         },
                       )
-                    : const Center(child: Icon(Icons.shopping_bag, size: 48)),
+                    : Center(
+                        child: Icon(
+                          Icons.shopping_bag,
+                          size: 48,
+                          color: AppColors.grey3,
+                        ),
+                      ),
               ),
             ),
 
-            // Product Info (fixed height)
-            Padding(
+            Container(
               padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                height: 88,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.name,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.black,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          product.category,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.grey3,
-                          ),
-                        ),
-                      ],
+              color: Colors.white,
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    product.category.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.grey3,
                     ),
-                    Text(
-                      _formatPrice(product.price),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+
+                  Text(
+                    product.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
                     ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+
+                  Text(
+                    _formatPrice(product.price),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ],

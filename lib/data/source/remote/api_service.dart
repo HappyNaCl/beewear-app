@@ -109,6 +109,26 @@ class ApiService {
     final res = await dio.post("/cart", data: data);
     return res.data;
   }
+
+  Future<dynamic> getCart() async {
+    final res = await dio.get("/cart");
+    return res.data;
+  }
+
+  Future<dynamic> removeFromCart(String cartItemId) async {
+    final res = await dio.delete("/cart/$cartItemId");
+    return res.data;
+  }
+
+  Future<dynamic> getMyStats() async {
+    final res = await dio.get("/product/me/stats");
+    return res.data;
+  }
+
+  Future<dynamic> getMyProducts() async {
+    final res = await dio.get("/product/me");
+    return res.data;
+  }
 }
 
 final apiServiceProvider = Provider<ApiService>((ref) {

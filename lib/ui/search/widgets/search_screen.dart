@@ -4,22 +4,45 @@ import 'package:beewear_app/ui/core/ui/search_bar.dart' as core_ui;
 import 'package:beewear_app/ui/search/view_model/search_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class SearchScreen extends ConsumerWidget {
-  const SearchScreen({super.key});
+class SearchScreen extends ConsumerStatefulWidget {
+  final String? initialQuery; 
+
+  // We accept an optional initialQuery (passed from Router)
+  const SearchScreen({super.key, this.initialQuery});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends ConsumerState<SearchScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    // FIX 1: Auto-trigger search if a query was passed
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      // Use Future.microtask to avoid "setState during build" errors
+      Future.microtask(() {
+        ref.read(searchViewModelProvider.notifier).search(widget.initialQuery!);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final searchState = ref.watch(searchViewModelProvider);
     final viewModel = ref.read(searchViewModelProvider.notifier);
 
     return MainLayout(
-      currentIndex: 1,
+      currentIndex: 1, 
       child: SafeArea(
         child: Column(
           children: [
             core_ui.SearchBar(
               hintText: "Search products...",
+
               onSubmitted: (query) {
                 viewModel.search(query);
               },
@@ -48,18 +71,25 @@ class SearchScreen extends ConsumerWidget {
       );
     }
 
-    // Reuse your Grid logic from other screens
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.7, // Adjust based on your ProductCard aspect ratio
+        childAspectRatio: 0.7, 
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
       itemCount: state.results.length,
       itemBuilder: (context, index) {
-        return ProductCard(product: state.results[index]);
+        final product = state.results[index];
+        
+        // FIX 2: Wrap in GestureDetector so we can click results!
+        return GestureDetector(
+          onTap: () {
+            context.pushNamed('product_detail', extra: product);
+          },
+          child: ProductCard(product: product),
+        );
       },
     );
   }

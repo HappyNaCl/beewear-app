@@ -65,15 +65,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             controller: _scrollController,
             child: Column(
               children: [
-                // Top bar with search
                 core_ui.SearchBar(
                   hintText: 'Search...',
                   onSubmitted: (q) {
-                    context.go(Routes.search);
+                    context.pushNamed(
+                      'search', 
+                      queryParameters: {'q': q}, 
+                    );
                   },
                 ),
 
-                // Profile Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Container(
